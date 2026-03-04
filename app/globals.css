@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #0d0d0d;
+  --paper: #f5f2ec;
+  --cream: #ede9df;
+  --accent: #c84b31;
+  --forest: #2d6a4f;
+  --muted: #7a7166;
+  --border: #d8d2c4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-ink text-white border border-ink rounded-lg font-dm font-medium transition-all duration-200 hover:bg-[#333] active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-ink border border-border rounded-lg font-dm font-medium transition-all duration-200 hover:bg-cream active:scale-95;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-white border border-accent rounded-lg font-dm font-medium transition-all duration-200 hover:bg-[#b03f28] active:scale-95;
+  }
+
+  .card {
+    @apply bg-white border border-border rounded-2xl;
+  }
+
+  .page-label {
+    @apply inline-block bg-cream border border-border rounded text-[10px] font-syne font-bold tracking-[2px] uppercase px-2.5 py-1 text-muted;
+  }
+
+  .input-field {
+    @apply w-full bg-paper border border-border rounded-lg px-4 py-2.5 text-sm font-dm text-ink placeholder:text-muted focus:outline-none focus:border-ink transition-colors;
+  }
+
+  .section-title {
+    @apply font-syne font-extrabold tracking-tight text-ink leading-tight;
+  }
+
+  .bias-chip {
+    @apply text-[11px] font-semibold px-2.5 py-0.5 rounded-full border;
+  }
+}
+
+@layer utilities {
+  .font-syne {
+    font-family: 'Syne', sans-serif;
+  }
+  .font-dm {
+    font-family: 'DM Sans', sans-serif;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* Code blocks */
+code {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  background: var(--cream);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+/* Table */
+table { border-collapse: collapse; width: 100%; }
+th { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
