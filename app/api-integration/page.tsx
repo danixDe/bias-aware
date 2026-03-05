@@ -251,7 +251,7 @@ export default function APIIntegrationPage() {
                   <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border">
                     <CheckCircle size={16} className="text-forest" />
                     <p className="font-syne font-bold text-sm">Model response received</p>
-                    <span className="ml-auto text-xs font-dm text-muted font-mono">200 OK</span>
+                    <span className="ml-auto text-xs font-dm text-muted">200 OK</span>
                   </div>
                   <FeedbackPanel result={result} />
                 </div>
