@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { ArrowRight, Clock, CheckCircle, XCircle, Loader2, Paperclip } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
@@ -27,14 +27,13 @@ export default function CandidatePortalPage() {
 
   const [jobs, setJobs] = useState<{ id: string; title: string; company: string; description: string; requirements: string[] }[]>([])
   const [selectedJobId, setSelectedJobId] = useState<string>('')
-  const [resumeText, setResumeText] = useState('')
+  const [resumeFile, setResumeFile] = useState<File | null>(null)
+  const [fileName, setFileName] = useState<string | null>(null)
   const [screeningResult, setScreeningResult] = useState<ScreeningResult | null>(null)
   const [isScreening, setIsScreening] = useState(false)
   const [screenError, setScreenError] = useState<string | null>(null)
 
   const myApps = applications
-
-  // Load existing applications for this candidate
   useEffect(() => {
     ;(async () => {
       const [appsRes, jobsRes] = await Promise.all([fetch('/api/applications'), fetch('/api/jobs')])
@@ -72,21 +71,21 @@ export default function CandidatePortalPage() {
       setScreenError('Please select a job to apply for.')
       return
     }
-    if (!resumeText.trim()) {
-      setScreenError('Please paste your resume text.')
+    if (!resumeFile) {
+      setScreenError('Please attach a PDF resume.')
       return
     }
 
     setIsScreening(true)
     try {
-      const jobDescription = `${job.title} at ${job.company}\n\n${job.description}\n\nRequirements: ${job.requirements.join(
-        ', '
-      )}`
+      const formData = new FormData()
+      formData.append('resume', resumeFile)
+      formData.append('email', user?.email || 'unknown@example.com')
+      formData.append('job_requirements', job.requirements.join(', '))
 
       const res = await fetch('/api/screen', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobDescription }),
+        body: formData,
       })
 
       if (!res.ok) {
@@ -112,13 +111,6 @@ export default function CandidatePortalPage() {
 
       setApplications((prev) => [newApp, ...prev])
       setSelected(newApp)
-
-      // Mirror into mock /api/applications for consistency (non-persistent)
-      void fetch('/api/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newApp),
-      })
     } catch (error) {
       setScreenError(error instanceof Error ? error.message : 'Something went wrong while screening')
     } finally {
@@ -162,7 +154,6 @@ export default function CandidatePortalPage() {
         </div>
 
         <div className="grid lg:grid-cols-5 gap-5">
-          {/* Application List */}
           <div className="lg:col-span-2 flex flex-col gap-3">
             <h2 className="font-syne font-bold text-base">Your Applications</h2>
             {myApps.map((app) => (
@@ -200,9 +191,7 @@ export default function CandidatePortalPage() {
             )}
           </div>
 
-          {/* Feedback Detail + New Screening */}
           <div className="lg:col-span-3 flex flex-col gap-4">
-            {/* New Screening Area */}
             <div className="card p-5">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-syne font-bold text-base">Run a new AI screening</h2>
@@ -229,15 +218,23 @@ export default function CandidatePortalPage() {
                 </div>
                 <div>
                   <label className="text-xs font-syne font-bold text-muted uppercase tracking-wide block mb-1.5">
-                    Paste your resume
+                    Attach resume (PDF)
                   </label>
-                  <textarea
-                    className="input-field min-h-[140px]"
-                    placeholder="Paste your resume text here. The model will compare it against the job description and highlight strengths, gaps, and possible bias."
-                    value={resumeText}
-                    onChange={(e) => setResumeText(e.target.value)}
-                    required
-                  />
+                  <label className="inline-flex items-center gap-2 text-xs font-dm px-3 py-2 rounded-lg border border-border cursor-pointer hover:bg-cream">
+                    <Paperclip size={14} />
+                    <span>{fileName ?? 'Choose a PDF resume'}</span>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        setResumeFile(file)
+                        setFileName(file.name)
+                      }}
+                    />
+                  </label>
                 </div>
 
                 {screenError && <p className="text-xs font-dm text-accent">{screenError}</p>}

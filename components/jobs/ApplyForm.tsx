@@ -10,6 +10,7 @@ export default function ApplyForm({ job }: { job: Job }) {
   const { data: session } = useSession()
   const user = session?.user as (typeof session)['user'] | undefined
 
+  const [resumeFile, setResumeFile] = useState<File | null>(null)
   const [resumeText, setResumeText] = useState('')
   const [fileName, setFileName] = useState<string | null>(null)
   const [screeningResult, setScreeningResult] = useState<ScreeningResult | null>(null)
@@ -20,13 +21,9 @@ export default function ApplyForm({ job }: { job: Job }) {
     const file = e.target.files?.[0]
     if (!file) return
     setFileName(file.name)
+    setResumeFile(file)
 
-    try {
-      const text = await file.text()
-      setResumeText(text)
-    } catch {
-      setError('Could not read file. Please paste your resume text instead.')
-    }
+    setError(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -34,21 +31,21 @@ export default function ApplyForm({ job }: { job: Job }) {
     setError(null)
     setScreeningResult(null)
 
-    if (!resumeText.trim()) {
-      setError('Please paste your resume or attach a readable text/PDF file.')
+    if (!resumeFile) {
+      setError('Please attach a PDF resume.')
       return
     }
 
     setIsSubmitting(true)
     try {
-      const jobDescription = `${job.title} at ${job.company}\n\n${job.description}\n\nRequirements: ${job.requirements.join(
-        ', '
-      )}`
+      const formData = new FormData()
+      formData.append('resume', resumeFile)
+      formData.append('email', user?.email || 'unknown@example.com')
+      formData.append('job_requirements', job.requirements.join(', '))
 
       const screenRes = await fetch('/api/screen', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText, jobDescription }),
+        body: formData,
       })
 
       if (!screenRes.ok) {

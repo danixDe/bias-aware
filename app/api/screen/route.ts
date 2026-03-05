@@ -2,18 +2,37 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   try {
-    const { resumeText, jobDescription } = await request.json()
+    const contentType = request.headers.get('content-type') || ''
 
-    if (!resumeText || !jobDescription) {
-      return NextResponse.json({ error: 'resumeText and jobDescription are required' }, { status: 400 })
+    if (!contentType.toLowerCase().startsWith('multipart/form-data')) {
+      return NextResponse.json(
+        { error: 'multipart/form-data with resume, email, and job_requirements is required' },
+        { status: 400 }
+      )
+    }
+
+    const form = await request.formData()
+    const resume = form.get('resume')
+    const email = form.get('email')
+    const jobRequirements = form.get('job_requirements')
+
+    if (!(resume instanceof File) || typeof email !== 'string' || typeof jobRequirements !== 'string') {
+      return NextResponse.json(
+        { error: 'resume (file), email (string), and job_requirements (string) are required' },
+        { status: 400 }
+      )
     }
 
     const MODEL_URL = process.env.MODEL_API_URL || 'http://127.0.0.1:8000'
 
+    const forwardForm = new FormData()
+    forwardForm.append('resume', resume)
+    forwardForm.append('email', email)
+    forwardForm.append('job_requirements', jobRequirements)
+
     const modelRes = await fetch(`${MODEL_URL}/screen`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ resume: resumeText, job_description: jobDescription }),
+      body: forwardForm,
     })
 
     if (!modelRes.ok) {
@@ -21,21 +40,39 @@ export async function POST(request: Request) {
       throw new Error(`Model server returned ${modelRes.status}${text ? `: ${text}` : ''}`)
     }
 
-    const modelData = await modelRes.json()
+    const modelData: {
+      status: string
+      candidate_skills: string[]
+      matched_skills: string[]
+      missing_skills: string[]
+      match_score: number
+      decision: string
+    } = await modelRes.json()
+
+    const feedbackParts: string[] = []
+    feedbackParts.push(
+      `Your resume matched ${modelData.match_score}% of the required skills for this role, leading to a decision of "${modelData.decision}".`
+    )
+    if (modelData.matched_skills?.length) {
+      feedbackParts.push(`Matched skills: ${modelData.matched_skills.join(', ')}.`)
+    }
+    if (modelData.missing_skills?.length) {
+      feedbackParts.push(
+        `Missing or weaker skills for this role: ${modelData.missing_skills.join(', ')}. Strengthening these will increase your chances next time.`
+      )
+    }
 
     const result = {
       id: crypto.randomUUID(),
       applicationId: crypto.randomUUID(),
-      score: Math.round((modelData.score ?? modelData.overall_score) * 100),
-      skillsMatch: Math.round((modelData.skills_match ?? modelData.skillsMatch ?? modelData.skills_score) * 100),
-      experienceMatch: Math.round(
-        (modelData.experience_match ?? modelData.experienceMatch ?? modelData.experience_score) * 100
-      ),
-      decision: modelData.decision,
-      feedback: modelData.feedback,
-      biasFlags: modelData.bias_flags ?? modelData.biasFlags ?? [],
-      skillGaps: modelData.skill_gaps ?? modelData.skillGaps ?? [],
-      strengths: modelData.strengths ?? [],
+      score: modelData.match_score,
+      skillsMatch: modelData.match_score,
+      experienceMatch: modelData.match_score,
+      decision: modelData.decision === 'shortlisted' ? 'shortlisted' : 'rejected',
+      feedback: feedbackParts.join(' '),
+      biasFlags: [] as any[],
+      skillGaps: modelData.missing_skills ?? [],
+      strengths: modelData.matched_skills ?? [],
       processedAt: new Date().toISOString(),
     }
 

@@ -21,14 +21,14 @@ def send_missing_skill_email(email, missing_skills):
 
     msg = MIMEText(message)
     msg["Subject"] = "Application Feedback"
-    msg["From"] = "fairhire@gmail.com"
+    msg["From"] = "hirefair4@gmail.com"
     msg["To"] = email
 
     server = smtplib.SMTP("smtp.gmail.com",587)
     server.starttls()
 
     # use app password here
-    server.login("fairhire@gmail.com","APP_PASSWORD")
+    server.login("hirefair4@gmail.com","ucst ihic gpro vutm")
 
     server.send_message(msg)
     server.quit()

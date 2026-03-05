@@ -8,7 +8,7 @@ export default function JobCard({ job, recruiterView = false }: { job: Job; recr
   const typeColor = job.type === 'remote' ? 'blue' : job.type === 'contract' ? 'amber' : 'green'
 
   return (
-    <div className="card p-5 hover:shadow-md transition-shadow group">
+    <div className="card p-5 hover:shadow-md transition-shadow group flex flex-col justify-between h-full">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
