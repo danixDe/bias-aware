@@ -1,37 +1,28 @@
 import re
 
-# skill database
-SKILLS_DB = [
-    "python","java","react","node","typescript",
-    "machine learning","deep learning","sql",
-    "docker","kubernetes","aws","system design"
-]
+def match_skills(resume_text, job_requirements):
 
-def extract_skills(text):
-
-    text = text.lower()
-
-    found_skills = []
-
-    for skill in SKILLS_DB:
-        if re.search(r"\b" + skill + r"\b", text):
-            found_skills.append(skill)
-
-    return found_skills
-
-
-def match_skills(candidate_skills, job_requirements):
+    resume_text = resume_text.lower()
 
     matched = []
     missing = []
 
     for req in job_requirements:
 
-        if req.lower() in candidate_skills:
+        req = req.lower().strip()
+
+        if re.search(r"\b" + re.escape(req) + r"\b", resume_text):
             matched.append(req)
         else:
             missing.append(req)
 
-    match_score = int((len(matched)/len(job_requirements))*100)
+    if len(job_requirements) == 0:
+        match_score = 0
+    else:
+        match_score = int((len(matched) / len(job_requirements)) * 100)
 
+    print("Matched:", matched)
+    print("Missing:", missing)
+    print("Score:", match_score)
+    print(matched, missing, match_score);
     return matched, missing, match_score

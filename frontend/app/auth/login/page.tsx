@@ -37,12 +37,13 @@ export default function LoginPage() {
 
       const session = await getSession()
       const sessionRole = (session?.user as any)?.role as Role | undefined
-      const role: Role = selectedRole ?? sessionRole ?? 'recruiter'
 
-      if (role === 'candidate') {
+      if (sessionRole === 'candidate') {
         router.push('/portal')
-      } else {
+      } else if (sessionRole === 'recruiter') {
         router.push('/dashboard')
+      } else {
+        throw new Error('Invalid account role')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')

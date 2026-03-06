@@ -7,10 +7,7 @@ import JobCard from '@/components/shared/JobCard'
 import { authOptions } from '@/lib/auth'
 
 async function fetchJobs() {
-  const base =
-    process.env.NEXTAUTH_URL ??
-    process.env.NEXT_PUBLIC_BASE_URL ??
-    'http://localhost:3000'
+  const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
   const res = await fetch(`${base}/api/jobs`, {
     next: { revalidate: 0 },
@@ -44,9 +41,23 @@ export default async function JobsPage() {
               {jobs.length} open positions · All applications receive detailed AI feedback
             </p>
           </div>
-          <Link href="/auth/signup?role=recruiter" className="btn-ghost text-sm px-4 py-2.5 flex items-center gap-2 hidden md:flex">
-            <PlusCircle size={15} /> Post a Job
-          </Link>
+          {role === 'recruiter' && (
+  <Link
+      href="/jobs/new"
+      className="btn-primary text-sm px-4 py-2.5 flex items-center gap-2 hidden md:flex"
+    >
+      <PlusCircle size={15} /> Post a Job
+    </Link>
+  )}
+
+  {role === 'public' && (
+    <Link
+      href="/auth/signup?role=recruiter"
+      className="btn-ghost text-sm px-4 py-2.5 flex items-center gap-2 hidden md:flex"
+    >
+      <PlusCircle size={15} /> Become a Recruiter
+    </Link>
+  )}
         </div>
 
         {/* Search & Filter bar */}

@@ -2,7 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 import os
 
 from resume_parser import parse_resume
-from resume_matcher import extract_skills, match_skills
+from resume_matcher import match_skills
 from email_service import send_missing_skill_email
 
 app = FastAPI(
@@ -42,13 +42,11 @@ async def screen_resume(
 
         # Extract text from resume
         text = parse_resume(file_path)
-
-        # Extract candidate skills
-        candidate_skills = extract_skills(text)
+        # for debug print(text);
 
         # Match skills with job requirements
         matched, missing, score = match_skills(
-            candidate_skills,
+            text,
             requirements
         )
 
@@ -64,7 +62,7 @@ async def screen_resume(
 
         return {
             "status": "success",
-            "candidate_skills": candidate_skills,
+            "candidate_skills": text,
             "matched_skills": matched,
             "missing_skills": missing,
             "match_score": score,

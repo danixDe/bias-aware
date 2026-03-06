@@ -5,20 +5,22 @@ import Footer from '@/components/layout/Footer'
 import JobCard from '@/components/shared/JobCard'
 import type { Job } from '@/types'
 
-async function fetchJobs() {
+async function fetchJobs(): Promise<Job[]> {
   const base =
     process.env.NEXTAUTH_URL ??
     process.env.NEXT_PUBLIC_BASE_URL ??
-    'http://localhost:3000'
+    "http://127.0.0.1:3001";
 
   const res = await fetch(`${base}/api/jobs`, {
-    next: { revalidate: 0 },
-  })
+    cache: "no-store",
+  });
+
   if (!res.ok) {
-    return [] as Job[]
+    return [];
   }
-  const data = await res.json()
-  return data.jobs as Job[]
+
+  const data = await res.json();
+  return data.jobs ?? [];
 }
 
 export default async function HomePage() {

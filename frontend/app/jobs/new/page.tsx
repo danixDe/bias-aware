@@ -9,7 +9,22 @@ import { PlusCircle } from 'lucide-react'
 
 export default function NewJobPage() {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  if (status === 'authenticated' && (session?.user as any)?.role !== 'recruiter') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-paper">
+        <div className="card p-8 text-center max-w-md">
+          <h2 className="font-syne font-extrabold text-2xl mb-2">Access Restricted</h2>
+          <p className="text-sm font-dm text-muted mb-4">
+            You cannot post jobs as a candidate. Only recruiters can create job listings.
+          </p>
+          <Link href="/portal" className="btn-primary px-4 py-2 text-sm">
+            Go to Portal
+          </Link>
+        </div>
+      </div>
+    )
+  }
   const recruiterCompany = (session?.user as any)?.company as string | undefined
   const [title, setTitle] = useState('')
   const [location, setLocation] = useState('')
@@ -24,7 +39,17 @@ export default function NewJobPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-
+    //vaidation
+    if (
+      !title.trim() ||
+      !location.trim() ||
+      !description.trim() ||
+      !requirements.trim()
+    ) {
+      setError('Please fill all required fields.')
+      setLoading(false)
+      return
+    }
     try {
       const res = await fetch('/api/jobs', {
         method: 'POST',
@@ -159,6 +184,7 @@ export default function NewJobPage() {
                 value={requirements}
                 onChange={(e) => setRequirements(e.target.value)}
                 placeholder="5+ years React/Node.js, System design experience, TypeScript proficiency"
+                required
               />
             </div>
 

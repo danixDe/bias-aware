@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { Menu, X, ChevronDown } from 'lucide-react'
-import { useSession } from 'next-auth/react'
+import { useSession,signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 
 const RECRUITER_NAV = [
@@ -89,18 +89,27 @@ export default function Navbar({ role = 'public' }: { role?: 'recruiter' | 'cand
             </>
           ) : (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 cursor-pointer group">
-                <div className="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center font-syne font-bold text-xs">
-                  {initials}
-                </div>
-                {displayName && (
-                  <span className="text-sm font-dm text-muted group-hover:text-ink transition-colors">
-                    {displayName}
-                  </span>
-                )}
-                <ChevronDown size={14} className="text-muted" />
-              </div>
-            </div>
+
+  <button
+    onClick={() => signOut({ callbackUrl: '/' })}
+    className="btn-ghost text-sm px-3 py-1.5"
+  >
+    Log out
+  </button>
+
+  <Link href="/profile" className="flex items-center gap-2 cursor-pointer group">
+      <div className="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center font-syne font-bold text-xs">
+        {initials}
+      </div>
+      {displayName && (
+        <span className="text-sm font-dm text-muted group-hover:text-ink transition-colors">
+          {displayName}
+        </span>
+      )}
+      <ChevronDown size={14} className="text-muted" />
+    </Link>
+
+  </div>
           )}
         </div>
 
@@ -123,6 +132,13 @@ export default function Navbar({ role = 'public' }: { role?: 'recruiter' | 'cand
               {item.label}
             </Link>
           ))}
+          <Link
+            href="/profile"
+            className="text-sm font-dm text-muted hover:text-ink py-1"
+            onClick={() => setOpen(false)}
+          >
+            Profile
+          </Link>
           <div className="flex gap-2 pt-2 border-t border-border">
             <Link href="/auth/login" className="btn-ghost text-sm px-4 py-2 flex-1 text-center">Log In</Link>
             <Link href="/auth/signup" className="btn-primary text-sm px-4 py-2 flex-1 text-center">Get Started</Link>

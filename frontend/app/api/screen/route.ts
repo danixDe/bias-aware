@@ -22,6 +22,24 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+    //added file size check
+    if (resume.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'Resume must be under 5MB' },
+        { status: 400 }
+      )
+    }
+    //addded file type check
+    const allowedTypes = [
+      "application/pdf"
+    ]
+
+    if (!allowedTypes.includes(resume.type)) {
+      return NextResponse.json(
+        { error: "Only PDF resumes are allowed" },
+        { status: 400 }
+      )
+    }
 
     const MODEL_URL = process.env.MODEL_API_URL || 'http://127.0.0.1:8000'
 
@@ -75,7 +93,7 @@ export async function POST(request: Request) {
       strengths: modelData.matched_skills ?? [],
       processedAt: new Date().toISOString(),
     }
-
+    console.log(result);
     return NextResponse.json({ result })
   } catch (error: unknown) {
     console.error('[/api/screen] Error:', error)
